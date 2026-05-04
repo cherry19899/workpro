@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clear Work Pro Cache</title>
+<style>
+body{font-family:sans-serif;padding:20px;text-align:center;background:#f5f5f5}
+.box{background:#fff;padding:24px;border-radius:16px;max-width:320px;margin:40px auto;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+h1{color:#10b981;font-size:20px}
+button{background:#10b981;color:#fff;border:none;padding:14px 24px;border-radius:12px;font-size:16px;width:100%;margin-top:16px}
+.status{margin-top:16px;font-size:14px;color:#666}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>🧹 Clear Work Pro</h1>
+<p>Press button to delete old cached files and fix white screen.</p>
+<button id="btn">Clear Cache & Reload</button>
+<div class="status" id="status"></div>
+</div>
+<script>
+document.getElementById('btn').onclick = function(){
+  var s = document.getElementById('status');
+  s.textContent = 'Clearing...';
+  
+  // Clear localStorage
+  localStorage.clear();
+  s.textContent += '\nlocalStorage cleared';
+  
+  // Clear all caches
+  if ('caches' in window) {
+    caches.keys().then(function(names){
+      return Promise.all(names.map(function(n){return caches.delete(n)}));
+    }).then(function(){
+      s.textContent += '\nCaches cleared';
+      
+      // Unregister service workers
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs){
+          return Promise.all(regs.map(function(r){return r.unregister()}));
+        }).then(function(){
+          s.textContent += '\nService workers cleared';
+          s.textContent += '\n\n✅ Done! Reloading...';
+          setTimeout(function(){window.location.href=window.location.origin;},1500);
+        });
+      }
+    });
+  } else {
+    s.textContent += '\n\n✅ Done! Reloading...';
+    setTimeout(function(){window.location.href='https://cherry19899.github.io';},1500);
+  }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="theme-color" content="#10b981" />
+    <meta name="description" content="Hire and work in Pi cryptocurrency. Find freelance jobs, pay and get paid in Pi." />
+    <meta name="keywords" content="Pi Network, freelance, jobs, cryptocurrency, hire, work" />
+    <meta name="author" content="Work Pro" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Work Pro" />
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Work Pro - Freelance on Pi" />
+    <meta property="og:description" content="Hire and work in Pi cryptocurrency." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://workpro.onrender.com" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Work Pro - Freelance on Pi" />
+    <meta name="twitter:description" content="Hire and work in Pi cryptocurrency." />
+    
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/vite.svg" />
+    <title>Work Pro - Freelance on Pi</title>
+    <script>window.WORKPRO_VERSION='v20';</script>
+    <script>
+      // One-time cache clear for v20 upgrade
+      (function() {
+        try {
+          var cleared = localStorage.getItem('workpro_v20_cleared');
+          if (!cleared) {
+            localStorage.setItem('workpro_v20_cleared', '1');
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                return Promise.all(names.map(function(n) { return caches.delete(n); }));
+              });
+            }
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                for (var reg of regs) reg.unregister();
+              });
+            }
+            localStorage.removeItem('workpro_user');
+            localStorage.removeItem('workpro_connects');
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+      // Pi SDK init with Promise — guarantees initialization before any other method
+      window._piInitPromise = new Promise(function(resolve, reject) {
+        var attempts = 0;
+        var maxAttempts = 25;
+        var interval = 300;
+        
+        function tryInit() {
+          attempts++;
+          if (typeof window.Pi !== 'undefined' && typeof window.Pi.init === 'function') {
+            try {
+              // Check if already initialized
+              if (window.Pi.initialized) {
+                resolve(true);
+                return;
+              }
+              window.Pi.init({ version: "2.0" });
+              resolve(true);
+            } catch (e) {
+              reject(e);
+            }
+            return;
+          }
+          if (attempts < maxAttempts) {
+            setTimeout(tryInit, interval);
+          } else {
+            resolve(false); // Resolve false, not reject — app continues without Pi
+          }
+        }
+        
+        // Wait for DOM ready
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+          tryInit();
+        } else {
+          document.addEventListener('DOMContentLoaded', tryInit);
+        }
+      });
+    </script>
+    <script type="module" crossorigin src="/assets/index-CUm_ctej.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Dwz60DSC.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="theme-color" content="#10b981" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/vite.svg" />
+    <title>Work Pro - Freelance on Pi</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <!-- Pi Mock for testing: add ?mock=1 to URL ONLY -->
+    <script src="https://cdn.jsdelivr.net/npm/pi-mock@latest/pi-mock.js"></script>
+    <script>
+      // Only enable mock when explicitly requested via ?mock=1
+      if (window.location.search.includes('mock=1')) {
+        if (typeof PiMock !== 'undefined') {
+          PiMock({
+            user: { uid: 'test123', username: 'testuser' },
+            payment: { amount: 1, memo: 'Test payment' }
+          });
+          console.log('[PiMock] Enabled via ?mock=1');
+        }
+      }
+
+      // Initialize Pi SDK when ready
+      function initPiSdk() {
+        if (typeof Pi !== 'undefined') {
+          try {
+            Pi.init({ version: "2.0" });
+            console.log('[Pi] SDK init OK');
+            return true;
+          } catch (e) {
+            console.error('[Pi] Init error:', e.message);
+            return true;
+          }
+        }
+        return false;
+      }
+
+      if (!initPiSdk()) {
+        // Retry in case script loads async
+        let retries = 0;
+        const interval = setInterval(function() {
+          retries++;
+          if (initPiSdk() || retries > 10) {
+            clearInterval(interval);
+            if (retries > 10 && typeof Pi === 'undefined') {
+              console.error('[Pi] SDK failed to load after retries');
+            }
+          }
+        }, 300);
+      }
+    </script>
+    <script type="module" crossorigin src="/assets/index-DeCz5OjH.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-C0RUVz54.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pi SDK Debug</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 480px; margin: 0 auto; background: #f5f5f5; }
+    button { width: 100%; padding: 15px; font-size: 16px; margin: 10px 0; border: none; border-radius: 8px; cursor: pointer; }
+    .green { background: #10b981; color: white; }
+    .blue { background: #3b82f6; color: white; }
+    .red { background: #ef4444; color: white; }
+    #log { background: white; padding: 10px; border-radius: 8px; margin-top: 20px; font-size: 12px; white-space: pre-wrap; word-break: break-all; min-height: 300px; }
+    .step { padding: 8px; margin: 4px 0; border-radius: 4px; }
+    .step.ok { background: #d1fae5; color: #065f46; }
+    .step.err { background: #fee2e2; color: #991b1b; }
+    .step.info { background: #dbeafe; color: #1e40af; }
+  </style>
+</head>
+<body>
+  <h2>Pi SDK Debug</h2>
+  <p style="color:#666; font-size:14px;">Testing Pi SDK step by step</p>
+  
+  <button class="blue" onclick="checkSDK()">1. Check SDK Status</button>
+  <button class="green" onclick="testInit()">2. Test Pi.init()</button>
+  <button class="green" onclick="testAuth()">3. Test Pi.authenticate()</button>
+  <button class="green" onclick="testPayment()">4. Test Pi.createPayment()</button>
+  <button class="red" onclick="clearLog()">Clear Log</button>
+  
+  <div id="log">Press buttons above to test...
+
+</div>
+
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script>
+    var logEl = document.getElementById('log');
+    function log(msg, type) {
+      var div = document.createElement('div');
+      div.className = 'step ' + (type || 'info');
+      div.textContent = new Date().toLocaleTimeString() + ': ' + msg;
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    function clearLog() {
+      logEl.innerHTML = '';
+    }
+
+    function checkSDK() {
+      clearLog();
+      log('=== Checking SDK ===', 'info');
+      
+      if (typeof window === 'undefined') {
+        log('ERROR: window undefined', 'err');
+        return;
+      }
+      
+      log('window exists: YES', 'ok');
+      
+      if (!window.Pi) {
+        log('ERROR: window.Pi NOT FOUND', 'err');
+        log('Are you in Pi Browser?', 'info');
+        return;
+      }
+      
+      log('window.Pi exists: YES', 'ok');
+      log('Pi.init: ' + (typeof Pi.init === 'function' ? 'YES' : 'NO'), typeof Pi.init === 'function' ? 'ok' : 'err');
+      log('Pi.authenticate: ' + (typeof Pi.authenticate === 'function' ? 'YES' : 'NO'), typeof Pi.authenticate === 'function' ? 'ok' : 'err');
+      log('Pi.createPayment: ' + (typeof Pi.createPayment === 'function' ? 'YES' : 'NO'), typeof Pi.createPayment === 'function' ? 'ok' : 'err');
+    }
+
+    function testInit() {
+      clearLog();
+      log('=== Testing Pi.init() ===', 'info');
+      
+      if (!window.Pi) {
+        log('ERROR: Pi SDK not loaded', 'err');
+        return;
+      }
+      
+      try {
+        Pi.init({ version: "2.0", sandbox: true });
+        log('Pi.init({version:"2.0", sandbox:true}) OK', 'ok');
+      } catch(e) {
+        log('Pi.init() ERROR: ' + e.message, 'err');
+        // Try without sandbox
+        try {
+          Pi.init({ version: "2.0" });
+          log('Pi.init({version:"2.0"}) OK (no sandbox)', 'ok');
+        } catch(e2) {
+          log('Pi.init() without sandbox ERROR: ' + e2.message, 'err');
+        }
+      }
+    }
+
+    function testAuth() {
+      clearLog();
+      log('=== Testing Pi.authenticate() ===', 'info');
+      
+      if (!window.Pi) {
+        log('ERROR: Pi SDK not loaded', 'err');
+        return;
+      }
+      
+      try {
+        Pi.init({ version: "2.0", sandbox: true });
+      } catch(e) {}
+      
+      log('Calling Pi.authenticate...', 'info');
+      
+      var timeout = setTimeout(function() {
+        log('TIMEOUT after 10s - no response', 'err');
+      }, 10000);
+      
+      Pi.authenticate(['username', 'payments'], function(payment) {
+        log('Incomplete payment callback: ' + JSON.stringify(payment), 'info');
+      }).then(function(result) {
+        clearTimeout(timeout);
+        log('SUCCESS! User: ' + result.user.username, 'ok');
+      }).catch(function(error) {
+        clearTimeout(timeout);
+        log('ERROR: ' + (error.message || JSON.stringify(error)), 'err');
+      });
+    }
+
+    function testPayment() {
+      clearLog();
+      log('=== Testing Pi.createPayment() ===', 'info');
+      
+      if (!window.Pi) {
+        log('ERROR: Pi SDK not loaded', 'err');
+        return;
+      }
+      
+      try {
+        Pi.init({ version: "2.0", sandbox: true });
+      } catch(e) {}
+      
+      log('Calling Pi.createPayment...', 'info');
+      
+      var timeout = setTimeout(function() {
+        log('TIMEOUT after 10s - wallet may not have opened', 'err');
+        log('Check:\n1. Are you in Pi Browser?\n2. Is app registered at develop.pinet.com?\n3. Is URL configured?', 'info');
+      }, 10000);
+      
+      Pi.createPayment(
+        {
+          amount: 1.0,
+          memo: "Test payment",
+          metadata: { test: true }
+        },
+        {
+          onReadyForServerApproval: function(paymentId) {
+            log('onReadyForServerApproval: ' + paymentId, 'ok');
+          },
+          onReadyForServerCompletion: function(paymentId, txid) {
+            log('onReadyForServerCompletion: ' + paymentId + ', txid: ' + txid, 'ok');
+          },
+          onCancel: function(paymentId) {
+            clearTimeout(timeout);
+            log('onCancel: ' + paymentId, 'err');
+          },
+          onError: function(error, payment) {
+            clearTimeout(timeout);
+            log('onError: ' + (error.message || error), 'err');
+          }
+        }
+      );
+      
+      log('Pi.createPayment called - check if wallet opened', 'info');
+    }
+  </script>
+</body>
+</html>
