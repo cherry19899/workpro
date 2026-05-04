@@ -1,5 +1,5 @@
 // Network-first for HTML, cache-first for assets
-const CACHE_NAME = 'workpro-v20';
+const CACHE_NAME = 'workpro-v21';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
